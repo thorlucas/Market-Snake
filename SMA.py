@@ -10,7 +10,7 @@ class SMATimeSeries(core.AbstractTimeSeries):
 		self.period = period
 
 	@classmethod
-	def fromPriceSeries(cls, priceSeries, period):
+	def fromTimeSeries(cls, priceSeries, period, key = lambda p: p.close):
 		smaSeries = SMATimeSeries(period)
 
 		# The number of periods we will have
@@ -18,7 +18,7 @@ class SMATimeSeries(core.AbstractTimeSeries):
 		for i in range(length):
 			total = 0.0
 			for j in range(period):
-				total += priceSeries[i + j].close
+				total += key(priceSeries[i + j])
 			total /= period
 
 			smaSeries.add(SMAPeriod(priceSeries[i].timestamp, total))

@@ -10,7 +10,7 @@ class EMATimeSeries(core.AbstractTimeSeries):
 		self.period = period
 
 	@classmethod
-	def fromPriceSeries(cls, priceSeries, period):
+	def fromTimeSeries(cls, priceSeries, period, key = lambda p: p.close):
 		emaSeries = cls(period)
 
 		# The number of periods we will have
@@ -19,7 +19,7 @@ class EMATimeSeries(core.AbstractTimeSeries):
 		# Calculate the initial SMA
 		total = 0
 		for i in range(period):
-			total += priceSeries[length - 1 + i].close
+			total += key(priceSeries[length - 1 + i])
 		total /= period
 		emaSeries.add(EMAPeriod(priceSeries[length - 1].timestamp, total))
 
@@ -29,7 +29,7 @@ class EMATimeSeries(core.AbstractTimeSeries):
 		# Calculating EMA for remaining periods
 		for i in range(length - 2, -1, -1):
 			# self[0] will be the newest calculed period (the previous period)
-			total = (priceSeries[i].close - emaSeries[0].value)*mult + emaSeries[0].value
+			total = (key(priceSeries[i]) - emaSeries[0].value)*mult + emaSeries[0].value
 			emaSeries.add(EMAPeriod(priceSeries[i].timestamp, total))
 
 		return emaSeries

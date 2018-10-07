@@ -121,3 +121,27 @@ class AbstractTimeSeries(TimeSeries):
 		trimmedOther = self.periods.intersection(other.periods)
 		length = len(trimmedSelf)
 		return AbstractTimeSeries([trimmedSelf[i] + trimmedOther[i] for i in range(length)])
+
+class CrossoverPeriod(Period):
+	def __init__(self, timestamp, isUpward):
+		super().__init__(timestamp)
+		self.isUpward = isUpward
+
+	def __str__(self):
+		return """%s
+			%s""" % (super().__str__(), "Upward crossover" if self.isUpward else "Downward crossover")
+
+class CrossoverAnalysis(TimeSeries):
+	def __init__(self, base, signal):
+		super().__init__()
+		self.base = base
+		self.signal = signal
+
+		self.cross = base-signal
+		
+		sign = self.cross[-1].value > 0
+		for i in reversed(self.cross.periods):
+			newSign = i.value > 0
+			if newSign is not sign:
+				self.add(CrossoverPeriod(i.timestamp, newSign))
+				sign = newSign
