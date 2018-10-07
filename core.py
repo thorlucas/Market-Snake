@@ -49,7 +49,7 @@ class PricePeriod(Period):
 			L: %f
 			C: %f
 			V: %d"""
-		return s % (datetime.datetime.strftime(self.timestamp, "%Y-%m-%d %H:%M:%S"), self.open, self.high, self.low, self.close, self.volume)
+		return s % (super().__str__(), self.open, self.high, self.low, self.close, self.volume)
 
 class TimeSeries(object):
 	## Constructs a sorted time series.
@@ -84,3 +84,40 @@ class TimeSeries(object):
 	## Adds a period to the series.
 	def add(self, period):
 		self.periods.add(period)
+
+## Represents a period with a number.
+#  This is an abstraction of any period with a number
+#  such as the difference between two EMAs, etc.
+class AbstractPeriod(Period):
+	def __init__(self, timestamp, value):
+		super().__init__(timestamp)
+		self.value = value
+
+	def __str__(self):
+		s = """%s
+			%f"""
+		return s % (super().__str__(), self.value)
+
+	def __sub__(self, other):
+		return AbstractPeriod(self.timestamp, self.value - other.value)
+
+	def __add__(self, other):
+		return AbstractPeriod(self.timestamp, self.value + other.value)
+
+class AbstractTimeSeries(TimeSeries):
+	def __init__(self, periods = None):
+		super().__init__(periods)
+
+	def __sub__(self, other):
+		# TODO: Wildly inefficient and wasteful, and might rely on a bug
+		trimmedSelf = other.periods.intersection(self.periods)
+		trimmedOther = self.periods.intersection(other.periods)
+		length = len(trimmedSelf)
+		return AbstractTimeSeries([trimmedSelf[i] - trimmedOther[i] for i in range(length)])
+
+	def __add__(self, other):
+		# TODO: Wildly inefficient and wasteful, and might rely on a bug
+		trimmedSelf = other.periods.intersection(self.periods)
+		trimmedOther = self.periods.intersection(other.periods)
+		length = len(trimmedSelf)
+		return AbstractTimeSeries([trimmedSelf[i] + trimmedOther[i] for i in range(length)])
