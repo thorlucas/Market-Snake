@@ -2,25 +2,22 @@ import core
 
 class SMAPeriod(core.AbstractPeriod):
 	def __init__(self, timestamp, sma):
-		super().__init__(timestamp, sma)
+		super().__init__(timestamp, {'sma': sma})
 
 class SMATimeSeries(core.AbstractTimeSeries):
-	def __init__(self, period, periods = None):
-		super().__init__(periods)
+	def __init__(self, period = None, periods = None):
+		super().__init__(periodType = SMAPeriod, periods = periods)
 		self.period = period
 
 	@classmethod
 	def fromTimeSeries(cls, priceSeries, period, key = lambda p: p.close):
-		smaSeries = SMATimeSeries(period)
+		smaSeries = cls(period)
 
 		# The number of periods we will have
 		length = len(priceSeries) - period + 1
 		for i in range(length):
-			total = 0.0
-			for j in range(period):
-				total += key(priceSeries[i + j])
-			total /= period
-
-			smaSeries.add(SMAPeriod(priceSeries[i].timestamp, total))
+			smaSeries.emplace(priceSeries[i].timestamp, 
+				sma=sum([key(j) for j in priceSeries[i:i+period]])/float(period)
+			)
 
 		return smaSeries
