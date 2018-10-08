@@ -3,11 +3,15 @@ import sortedcontainers as sc
 
 ## Base class representing a period of anything.
 #  This is inherited by price period, or MA period.
-class Period(object):
+class AbstractPeriod(object):
 	## Constructs a period with a timestamp.
 	#  @param timestamp should be a datetime.datetime object.
-	def __init__(self, timestamp):
+	def __init__(self, timestamp, values):
 		self.timestamp = timestamp
+		self.values = values
+
+	def __getattr__(self, key):
+		return self.values[key]
 
 	# Operators on the timestamps
 
@@ -27,34 +31,28 @@ class Period(object):
 		return self.timestamp.__hash__()
 
 	def __str__(self):
-		return datetime.datetime.strftime(self.timestamp, "%Y-%m-%d %H:%M:%S")
+		return "%s\n%s" % (datetime.datetime.strftime(self.timestamp, "%Y-%m-%d %H:%M:%S"),
+			"\n".join(["\t%s: %s" % (k, v) for k, v in self.values.items()]))
 
-## Class representing an OHLCV price period.
-class PricePeriod(Period):
-	## Constructs a period with timestamp and OHLCV.
-	#  @param timestamp should be a datetime.datetime object.
-	#  @param open and the others should be numbers.
-	def __init__(self, timestamp, open, high, low, close, volume):
-		super().__init__(timestamp)
-		self.open = open
-		self.high = high
-		self.low = low
-		self.close = close
-		self.volume = volume
+	def __sub__(self, other):
+		if (self.values.keys() != other.values.keys()):
+			raise TypeError("Cannot substract incompatible types %s and %s" % (self.__class__.__name__, other.__class__.__name__))
 
-	def __str__(self):
-		s = """%s\n
-			O: %f
-			H: %f
-			L: %f
-			C: %f
-			V: %d"""
-		return s % (super().__str__(), self.open, self.high, self.low, self.close, self.volume)
+		return self.__class__(self.timestamp, **{k : (vs - vo) for ((k, vs), (_, vo)) in zip(self.values.items(), other.values.items())})
 
-class TimeSeries(object):
+	def __add__(self, other): 
+		if (self.values.keys() != other.values.keys()):
+			raise TypeError("Cannot substract incompatible types %s and %s" % (self.__class__.__name__, other.__class__.__name__))
+		
+		return self.__class__(self.timestamp, **{k : (vs - vo) for ((k, vs), (_, vo)) in zip(self.values.items(), other.values.items())})
+
+class AbstractTimeSeries(object):
 	## Constructs a sorted time series.
 	#  @param periods is optionally a list of periods to be added.
-	def __init__(self, periods = None):
+	def __init__(self, periodType = AbstractPeriod, periods = None):
+		## Used for emplacing.
+		self.periodType = periodType
+
 		## This is the set of periods.
 		#  It remains sorted by timestamp.
 		#  Index 0 is the newest period.
@@ -81,67 +79,32 @@ class TimeSeries(object):
 			s += str(p) + "\n"
 		return s
 
+	def __sub__(self, other):
+		# TODO: Wildly inefficient and wasteful, and might rely on a bug
+		trimmedSelf = other.periods.intersection(self.periods)
+		trimmedOther = self.periods.intersection(other.periods)
+		length = len(trimmedSelf)
+		return self.__class__(periods=[trimmedSelf[i] - trimmedOther[i] for i in range(length)])
+
+	def __add__(self, other):
+		# TODO: Wildly inefficient and wasteful, and might rely on a bug
+		trimmedSelf = other.periods.intersection(self.periods)
+		trimmedOther = self.periods.intersection(other.periods)
+		length = len(trimmedSelf)
+		return self.__class__(periods=[trimmedSelf[i] + trimmedOther[i] for i in range(length)])
+
 	## Adds a period to the series.
 	def add(self, period):
 		self.periods.add(period)
 
-## Represents a period with a number.
-#  This is an abstraction of any period with a number
-#  such as the difference between two EMAs, etc.
-class AbstractPeriod(Period):
-	def __init__(self, timestamp, value):
-		super().__init__(timestamp)
-		self.value = value
+	## Emplaces a period
+	def emplace(self, timestamp, **args):
+		self.add(self.periodType(timestamp, **args))
 
-	def __str__(self):
-		s = """%s
-			%f"""
-		return s % (super().__str__(), self.value)
+class PricePeriod(AbstractPeriod):
+	def __init__(self, timestamp, open, high, low, close, volume):
+		super().__init__(timestamp, {'open' : open, 'high' : high, 'low' : low, 'close' : close, 'volume' : volume})
 
-	def __sub__(self, other):
-		return AbstractPeriod(self.timestamp, self.value - other.value)
-
-	def __add__(self, other):
-		return AbstractPeriod(self.timestamp, self.value + other.value)
-
-class AbstractTimeSeries(TimeSeries):
+class PriceTimeSeries(AbstractTimeSeries):
 	def __init__(self, periods = None):
-		super().__init__(periods)
-
-	def __sub__(self, other):
-		# TODO: Wildly inefficient and wasteful, and might rely on a bug
-		trimmedSelf = other.periods.intersection(self.periods)
-		trimmedOther = self.periods.intersection(other.periods)
-		length = len(trimmedSelf)
-		return AbstractTimeSeries([trimmedSelf[i] - trimmedOther[i] for i in range(length)])
-
-	def __add__(self, other):
-		# TODO: Wildly inefficient and wasteful, and might rely on a bug
-		trimmedSelf = other.periods.intersection(self.periods)
-		trimmedOther = self.periods.intersection(other.periods)
-		length = len(trimmedSelf)
-		return AbstractTimeSeries([trimmedSelf[i] + trimmedOther[i] for i in range(length)])
-
-class CrossoverPeriod(Period):
-	def __init__(self, timestamp, isUpward):
-		super().__init__(timestamp)
-		self.isUpward = isUpward
-
-	def __str__(self):
-		return """%s
-			%s""" % (super().__str__(), "Upward crossover" if self.isUpward else "Downward crossover")
-
-class CrossoverAnalysis(TimeSeries):
-	def __init__(self, base, signal):
-		super().__init__()
-		self.base = base
-		self.signal = signal
-
-		self.cross = base-signal
-		
-		sign = self.cross[-1].value > 0
-		for i in reversed(self.cross.periods):
-			newSign = i.value > 0
-			if newSign is not sign:
-				self.add(CrossoverPeriod(i.timestamp, newSign))
-				sign = newSign
+		super().__init__(periodType = PricePeriod, periods = periods)

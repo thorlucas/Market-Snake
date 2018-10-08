@@ -42,7 +42,7 @@ class AlphaVantage(object):
 	#  @param interval is an integer minutes for the interval.
 	#  @returns a time series.
 	def Intraday(self, symbol, interval):
-		series = core.TimeSeries()
+		series = core.PriceTimeSeries()
 
 		if not self.TestMode:
 			json = self.getJson(self.FuncIntraday % (symbol, interval))["Time Series (%dmin)" % (interval)]
@@ -51,12 +51,12 @@ class AlphaVantage(object):
 
 		for dateString in json:
 			timestamp = datetime.datetime.strptime(dateString, "%Y-%m-%d %H:%M:%S")
-			open   = float(json[dateString]["1. open"])
-			high   = float(json[dateString]["2. high"])
-			low    = float(json[dateString]["3. low"])
-			close  = float(json[dateString]["4. close"])
-			volume = int(json[dateString]["5. volume"])
-
-			series.add(core.PricePeriod(timestamp, open, high, low, close, volume))
+			series.emplace(timestamp,
+						   open   =	float(json[dateString]["1. open"]),
+						   high   =	float(json[dateString]["2. high"]),
+						   low    =	float(json[dateString]["3. low"]),
+						   close  =	float(json[dateString]["4. close"]),
+						   volume =	int(json[dateString]["5. volume"])
+			)
 
 		return series
