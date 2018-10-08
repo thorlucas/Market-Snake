@@ -1,15 +1,16 @@
 import core
 import EMA
 
-class MACDIndicator(core.CrossoverAnalysis):
+class MACDTimeSeries(core.CompoundTimeSeries):
 	def __init__(self, base, signal):
-		super().__init__(base, signal)
+		super().__init__({'base':base, 'signal':signal})
 
 	@classmethod
-	def fromPriceSeries(cls, priceSeries, baseA = 12, baseB = 26, signal = 9):
-		emaA = EMA.EMATimeSeries.fromTimeSeries(priceSeries, baseA)
-		emaB = EMA.EMATimeSeries.fromTimeSeries(priceSeries, baseB)
-		base = emaA - emaB
-		emaS = EMA.EMATimeSeries.fromTimeSeries(base, signal, key = lambda p: p.value)
+	def fromTimeSeries(cls, timeSeries, longPeriod, shortPeriod, signalPeriod, key = lambda p: p.close):
+		emaLong  = EMA.EMATimeSeries.fromTimeSeries(timeSeries, longPeriod,  key = key)
+		emaShort = EMA.EMATimeSeries.fromTimeSeries(timeSeries, shortPeriod, key = key)
+		baseSeries = emaShort - emaLong
 
-		return cls(base, emaS)
+		signalSeries = EMA.EMATimeSeries.fromTimeSeries(baseSeries, signalPeriod, key = lambda p: p.ema)
+
+		return cls(baseSeries, signalSeries)

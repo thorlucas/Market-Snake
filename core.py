@@ -76,7 +76,7 @@ class AbstractTimeSeries(object):
 		return len(self.periods)
 
 	def __str__(self):
-		return '\n'.join([str(p) in self.periods])
+		return '\n'.join([str(p) for p in self.periods])
 
 	## Subtracts time series.
 	#  It does this on a value by value basis.
