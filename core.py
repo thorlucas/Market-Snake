@@ -46,6 +46,8 @@ class AbstractPeriod(object):
 		
 		return self.__class__(self.timestamp, **{k : (vs - vo) for ((k, vs), (_, vo)) in zip(self.values.items(), other.values.items())})
 
+## Abstract time series that should be inherited from.
+#  Basically a sorted collection of periods with some operators.
 class AbstractTimeSeries(object):
 	## Constructs a sorted time series.
 	#  @param periods is optionally a list of periods to be added.
@@ -74,11 +76,12 @@ class AbstractTimeSeries(object):
 		return len(self.periods)
 
 	def __str__(self):
-		s = ""
-		for p in self.periods:
-			s += str(p) + "\n"
-		return s
+		return '\n'.join([str(p) in self.periods])
 
+	## Subtracts time series.
+	#  It does this on a value by value basis.
+	#  The class taken is that of the left.
+	#  Classes are first checked by compatibiltiy (identical values).
 	def __sub__(self, other):
 		# TODO: Wildly inefficient and wasteful, and might rely on a bug
 		trimmedSelf = other.periods.intersection(self.periods)
@@ -101,10 +104,35 @@ class AbstractTimeSeries(object):
 	def emplace(self, timestamp, **args):
 		self.add(self.periodType(timestamp, **args))
 
+## Compounds several time series together.
+#  This is for things like MACD and Ichimoku that consist of
+#  several time series together.
+#  Arithematic typically makes no sense for these, so it's
+#  not implemented by default.
+class CompoundTimeSeries(object):
+	## Creates a compound time series.
+	#  @param series is a dictionary of named series to be accessed by __getattr__.
+	def __init__(self, series):
+		self.series = series
+
+	def __getattr__(self, key):
+		return self.series[key]
+
+	def __str__(self):
+		# TODO: Broken for some fuckin' reason
+		return '\n'.join([
+			'\n'.join([
+					str(p) for p in self.series[k]
+				])
+			for k in self.series
+			])
+
+## OHLCV Periods
 class PricePeriod(AbstractPeriod):
 	def __init__(self, timestamp, open, high, low, close, volume):
 		super().__init__(timestamp, {'open' : open, 'high' : high, 'low' : low, 'close' : close, 'volume' : volume})
 
+## OHLCV Series
 class PriceTimeSeries(AbstractTimeSeries):
 	def __init__(self, periods = None):
 		super().__init__(periodType = PricePeriod, periods = periods)
