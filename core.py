@@ -78,8 +78,16 @@ class AbstractTimeSeries(object):
 	## Gets a time period.
 	#  Index 0 is the newest period.
 	def __getitem__(self, index):
-		if isinstance(index, (int, slice)):
+		if isinstance(index, int):
 			return self.periods[index]
+		elif isinstance(index, slice):
+			if isinstance(index.start, int):
+				return self.periods[index]
+			elif isinstance(index.start, datetime.datetime):
+				# TODO: Implement stepped slices
+				indexStart = self.periods.index(index.start) if index.start is not None else None
+				indexStop = self.periods.index(index.stop) if index.stop is not None else None
+				return self.__getitem__(slice(indexStart, indexStop))
 		elif isinstance(index, datetime.datetime):
 			return self.periods[self.periods.index(index)]
 		else:
@@ -141,12 +149,20 @@ class CompoundTimeSeries(object):
 
 	def __getitem__(self, index):
 		# TODO: Implement int version!
-		# The int version should account for offset time series, etc.
+		# The int version should accgount for offset time series, etc.
 		# It's going to be a little complex.
 		if isinstance(index, datetime.datetime):
 			return self.periodType(index, { k : v[index] for k, v in self.series.items()})
-		elif isinstance(index, (int, slice)):
+		elif isinstance(index, int):
 			raise NotImplementedError("Fetching by type %s not implemented yet." % type(index))
+		elif isinstance(index, slice):
+			if isinstance(index.start, int):
+				raise NotImplementedError("Fetching by type %s not implemented yet." % type(index))
+			elif isinstance(index.start, datetime.datetime):
+				# TODO: This is not yet implemented, just loops back to not implemented error.
+				indexStart = self.periods.index(index.start) if index.start is not None else None
+				indexStop = self.periods.index(index.stop) if index.stop is not None else None
+				return self.__getitem__(slice(indexStart, indexStop))
 		else:
 			raise TypeError("Cannot fetch item from %s with key type %s" % (self.__class__, type(index)))
 
