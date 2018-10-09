@@ -3,3 +3,4 @@ config.ini
 *.pyc
 __pycache__
 *.orig
+testLoad.py
