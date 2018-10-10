@@ -74,7 +74,7 @@ period to calculate the EMA on.
 ```python
 import EMA
 ...
-ema26 = EMA.EMATimeSeries.fromTimeseries(timeSeries, 26)
+ema26 = EMA.EMATimeSeries.fromTimeSeries(timeSeries, 26)
 ```
 
 Tada! Let's perform arithemetic between two EMAs.
