@@ -35,8 +35,8 @@ Then, add your key to the config file.
 To create the AlphaVantage instance, simply pass in the name of the config file.
 
 ```python
-import AlphaVantage as AV
-av = AV.AlphaVantage('config.ini')
+import marketwatch.data.alphavantage as alphavantage
+av = alphavantage.AlphaVantage('config.ini')
 ```
 
 ## Fetching Market Data
@@ -49,13 +49,12 @@ time series, or even combining several series into one compound series.
 
 For Open, High, Low, Close, Volume data, we use the `PriceTimeSeries` class.
 This class stores a sorted collection of `PricePeriod` objects. These
-are defined in `core.py`
+are defined in `marketwatch.core`
 
 The `AlphaVantage` class can automatically return `PriceTimeSeries` for us.
 Currently, only Intraday series are available.
 
 ```python
-import core
 ...
 timeSeries = av.Intraday('AAPL', 5)
 ```
@@ -67,13 +66,13 @@ You can `print(timeSeries)`, but the output is not yet quite so beautiful.
 
 We can use this time series data and calculate several indicators on top
 of this. Let's try the Exponential Moving Average (EMA).
-The `EMATimeSeries` and `EMAPeriod` classes are defined in `EMA.py`.
+The `EMATimeSeries` and `EMAPeriod` classes are defined in `marketwatch.indicators.EMA`.
 
 We will pass the time series data into a class method, as well as the
 period to calculate the EMA on.
 
 ```python
-import EMA
+import marketwatch.indicators.EMA as EMA
 ...
 ema26 = EMA.EMATimeSeries.fromTimeSeries(timeSeries, 26)
 ```
@@ -100,7 +99,7 @@ compound time series `MACDTimeSeries` does. To achieve the same thing,
 we could have written
 
 ```python
-import MACD
+import marketwatch.indicators.MACD as MACD
 m = MACD.MACDTimeSeries.fromTimeSeries(timeSeries, 26, 12, 9)
 
 print(m.base)
