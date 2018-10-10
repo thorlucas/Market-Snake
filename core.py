@@ -1,6 +1,8 @@
 import datetime
 import sortedcontainers as sc
 
+# Base periods and time series
+
 ## Base class representing a period of anything.
 #  This is inherited by price period, or MA period.
 class AbstractPeriod(object):
@@ -147,6 +149,10 @@ class CompoundTimeSeries(object):
 	def __getattr__(self, key):
 		return self.series[key]
 
+	## Gets a period from this time series.
+	#  The 0 index is the latest period.
+	#  Periods can also be fetched by date time.
+	#  @param index either an int, a datetime, or a slice of either one of those.
 	def __getitem__(self, index):
 		# TODO: Implement int version!
 		# The int version should accgount for offset time series, etc.
@@ -174,6 +180,8 @@ class CompoundTimeSeries(object):
 				])
 			for k in self.series
 			])
+
+# OHLVC periods and time series
 
 ## OHLCV Periods
 class PricePeriod(AbstractPeriod):
