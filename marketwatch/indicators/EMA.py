@@ -1,4 +1,4 @@
-import core
+import marketwatch.core as core
 
 class EMAPeriod(core.AbstractPeriod):
 	def __init__(self, timestamp, ema):

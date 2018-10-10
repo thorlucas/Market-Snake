@@ -1,5 +1,5 @@
-import core
-import EMA
+import marketwatch.core as core
+import marketwatch.indicators.EMA as EMA
 
 class MACDTimeSeries(core.CompoundTimeSeries):
 	def __init__(self, base, signal):
