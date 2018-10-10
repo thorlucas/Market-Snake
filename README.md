@@ -5,15 +5,17 @@
 This Python library is designed easily script stock market indicators and alerts.
 
 Indicators such as the MACD can provide insight into the trends the market is
-taking. However, these changes often occur quickly, and they are often missed
+taking. However, these changes can occur quickly, and they are often missed
 if you are not paying attention to the market. Alerts help you quickly send
 out messages so you won't miss a thing.
 
+You can also easily script your own indicators and alerts.
+
 This library is still in early development. It currently uses the free
 AlphaVantage API to fetch price data, and indicators are calculated on top of
-this data.
+this data. Alerts can currently be sent by email.
 
-# Using Market Watch
+# Getting Started
 
 ## Configuration
 
@@ -25,9 +27,8 @@ While learning, you may want to turn `TEST_MODE` on. This uses AAPL stock at
 
 ## Creating An AlphaVantage Instance
 
-Currently, only the AlphaVantage web API is used to fetch stock market data.
-In order to get any data, we first must create an instance.
-
+Currently, only the [AlphaVantage](https://www.alphavantage.co) web API is used to fetch stock market data.
+Luckily, an AlphaVantage API Key is **free** and requires only your email address.
 First, make sure to [get an API key from AlphaVantage](https://www.alphavantage.co/support/#api-key).
 Then, add your key to the config file.
 
@@ -43,7 +44,7 @@ av = AV.AlphaVantage('config.ini')
 Next we have to fetch time series data from AlphaVantage. A time series
 is simply a collection of data (like prices) with an associated timestamp.
 Market Watch's time series classes provide of useful features, such as
-fetching by timestamp or by index, performing arithematic between two
+fetching by timestamp or by index, performing arithmetic between two
 time series, or even combining several series into one compound series.
 
 For Open, High, Low, Close, Volume data, we use the `PriceTimeSeries` class.
