@@ -3,4 +3,5 @@ class Event(object):
 		self.alert = alert
 
 	def broadcast(self):
-		self.alert.alert()
+		if self.alert is not None:
+			self.alert()
