@@ -7,7 +7,7 @@ import configparser
 import urllib.request
 import json
 import datetime
-import marketwatch.core as core
+import marketsnake.core as core
 
 class AlphaVantage(object):
 	"""docstring for AlphaVantage"""

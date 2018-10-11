@@ -1,7 +1,7 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import marketwatch.alerts.alert as alert
+import marketsnake.alerts.alert as alert
 import configparser
 
 class Email(object):

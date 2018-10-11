@@ -1,4 +1,4 @@
-# Market Watch
+# Market Snake
 
 ## Overview
 
@@ -43,7 +43,7 @@ av = AV.AlphaVantage('config.ini')
 
 Next we have to fetch time series data from AlphaVantage. A time series
 is simply a collection of data (like prices) with an associated timestamp.
-Market Watch's time series classes provide of useful features, such as
+Market Snake's time series classes provide of useful features, such as
 fetching by timestamp or by index, performing arithmetic between two
 time series, or even combining several series into one compound series.
 
