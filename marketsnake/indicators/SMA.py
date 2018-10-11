@@ -1,4 +1,4 @@
-import marketwatch.core as core
+import marketsnake.core as core
 
 class SMAPeriod(core.AbstractPeriod):
 	def __init__(self, timestamp, sma):

@@ -1,7 +1,7 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import marketwatch.alerts.alert as alert
+import marketsnake.alerts.alert as alert
 import configparser
 
 class Email(object):
@@ -32,5 +32,5 @@ class EmailAlert(alert.AbstractAlert):
 	def __init__(self, email, to, subject):
 		super().__init__(alert.Callback(email.sendEmail, {'to' : to, 'subject' : subject}))
 
-	def alert(self, body):
+	def __call__(self, body):
 		self.callback({'body' : body})

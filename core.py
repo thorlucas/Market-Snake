@@ -4,10 +4,11 @@ import sortedcontainers as sc
 # Base periods and time series
 
 ## Base class representing a period of anything.
-#  This is inherited by price period, or MA period.
+#  This is inherited by price period, or SMA period.
 class AbstractPeriod(object):
 	## Constructs a period with a timestamp.
 	#  @param timestamp should be a datetime.datetime object.
+	#  @param values is a dictionary of attribute value pairs.
 	def __init__(self, timestamp, values):
 		self.timestamp = timestamp
 		self.values = values
